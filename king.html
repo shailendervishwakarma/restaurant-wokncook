@@ -1,0 +1,407 @@
+<!-- OUR CODE STARTS HERE -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="WOK'n'COOK is a restaurant that serves delicious Asian cuisine.">
+    <meta name="keywords" content="WOK'n'COOK, Asian cuisine, restaurant, food, dining">
+    <meta name="robots" content="index, follow">
+    <title>WOK'n'COOK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- THIS IS HOW YOU ADD STYLESHEET EXTERNAL CSS FILE  -->
+    <link rel="stylesheet" href="king.css">
+    <!-- THIS IS HOW U ADD EXTERNAL JS FILE -->
+    <script src="king.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header class="hero">
+            <div>
+                <p class="hero-badge">Asian Food • Fresh Taste • Fast Service</p>
+                <h1>Welcome to WOK'n'COOK</h1>
+                <p class="hero-text">Experience the best Asian cuisine in town!</p>
+            </div>
+        </header>
+
+        <main>
+            <section class="menu-section">
+                <h2>Our Menu</h2>
+                <p>Choose from 100+ delicious dishes across Indian, Chinese, Continental, and other cuisines.</p>
+                <div class="menu-help">Click any dish below to select it.</div>
+                <div id="menu-display" class="menu-display"></div>
+            </section>
+
+            <section class="order-section">
+                <div>
+                    <button type="button" onclick="calculateBill()">Calculate Bill</button>
+                    <button type="button" id="order-btn" class="order-btn hidden" onclick="showOrderForm()">Place Order</button>
+                    <h3>Selected Items</h3>
+                    <ul id="order-list">
+                        <li>No items added yet.</li>
+                    </ul>
+                    <p id="bill-output">Add dishes to your list and calculate the bill.</p>
+
+                    <div id="order-form-container" class="order-form-container hidden">
+                        <h3>Order Details</h3>
+                        <form id="order-form" action="backend.php" method="post" onsubmit="return submitOrderForm(event);">
+                            <input type="hidden" id="order-summary" name="orderSummary">
+                            <input type="hidden" id="total-bill" name="totalBill">
+
+                            <div class="order-form-group">
+                                <label for="order-type">Order Type</label>
+                                <select id="order-type" name="orderType" onchange="toggleAddressField()">
+                                    <option value="Dine In">Dine In</option>
+                                    <option value="Takeaway">Takeaway</option>
+                                    <option value="Home Delivery">Home Delivery</option>
+                                </select>
+                            </div>
+
+                            <div id="address-group" class="order-form-group hidden">
+                                <label for="delivery-address">Address</label>
+                                <textarea id="delivery-address" name="address" rows="3" placeholder="Enter your address for takeaway or home delivery"></textarea>
+                            </div>
+
+                            <div class="order-form-group">
+                                <label for="customer-name">Your Name</label>
+                                <input type="text" id="customer-name" name="customerName" required>
+                            </div>
+
+                            <div class="order-form-group">
+                                <label for="customer-phone">Phone Number</label>
+                                <input type="tel" id="customer-phone" name="customerPhone" required>
+                            </div>
+
+                            <div class="order-form-group">
+                                <label for="customer-email">Email</label>
+                                <input type="email" id="customer-email" name="customerEmail">
+                            </div>
+
+                            <div class="order-form-group">
+                                <label for="order-notes">Special Notes</label>
+                                <textarea id="order-notes" name="orderNotes" rows="3" placeholder="Any delivery instructions or food preferences"></textarea>
+                            </div>
+
+                            <div class="order-form-actions">
+                                <button type="submit" class="submit-order-btn">Submit Order</button>
+                                <button type="button" class="secondary-btn" onclick="hideOrderForm()">Cancel</button>
+                            </div>
+                        </form>
+                        <p id="order-message" class="order-message"></p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="contact-section">
+                <h2>Contact Us</h2>
+                <p>Have questions or want to make a reservation? Call us at (+91) 9354166701 or email us at info@wokncook.com.</p>
+
+                <h3>Follow Us</h3>
+                <p>Stay connected with us on social media:</p>
+                <h4>Facebook: <a href="https://www.facebook.com/wokncook" target="_blank">WOK'n'COOK</a></h4>
+                <h4>Instagram: <a href="https://www.instagram.com/wokncook" target="_blank">@wokncook</a></h4>
+                <h4>Twitter: <a href="https://twitter.com/wokncook" target="_blank">@wokncook</a></h4>
+                <h4>Youtube: <a href="https://youtube.com" target="_blank">WOK'n'COOK</a></h4>
+            </section>
+
+            <section class="feedback-section">
+                <h2>Feedback</h2>
+                <form action="backend.php">
+                    <div>
+                        <label for="rating">Rating:</label>
+                        <input type="number" id="rating" name="rating" min="1" max="5" required>
+                    </div>
+                    <br>
+                    <div>
+                        <label for="feedback">Feedback:</label> <br>
+                        <textarea name="Feedback" id="feedback" cols="90" rows="10"></textarea>
+                    </div>
+                    <br>
+                    <div>
+                        <input type="submit" value="Submit">
+                        <input type="reset" value="Reset Form">
+                    </div>
+                </form>
+            </section>
+
+            <section class="location-section">
+                <h2>Location</h2>
+                <p>Visit us at RZ 8/285, C Block, Old Roshan Pura, Najafgarh, New Delhi , India.</p>
+                <h3>Opening Hours</h3>
+                <p>Monday - Friday: 11:00 AM - 10:00 PM</p>
+                <p>Saturday - Sunday: 12:00 PM - 11:00 PM</p>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let orderItems = [];
+
+        const menuGroups = {
+            Indian: [
+                'Paneer Butter Masala', 'Chicken Biryani', 'Masala Dosa', 'Dal Makhani', 'Chole Bhature', 'Hyderabadi Biryani',
+                'Palak Paneer', 'Aloo Paratha', 'Rajma Chawal', 'Samosa', 'Pav Bhaji', 'Kadai Paneer', 'Mutton Curry',
+                'Fish Fry', 'Butter Chicken', 'Chicken Curry', 'Egg Curry', 'Pani Puri', 'Bhel Puri', 'Gulab Jamun',
+                'Rasgulla', 'Aloo Gobi', 'Bhindi Masala', 'Baingan Bharta', 'Chicken Tikka Masala', 'Keema Naan', 'Dahi Puri',
+                'Veg Korma', 'Chicken Kebab', 'Lamb Seekh', 'Schezwan Momos', 'Tandoori Roti', 'Naan', 'Paratha', 'Biryani',
+                'Methi Malai Paneer', 'Shahi Paneer', 'Dum Aloo', 'Matar Paneer', 'Kofta Curry', 'Prawn Curry', 'Prawn Biryani'
+            ],
+            Chinese: [
+                'Veg Fried Rice', 'Chicken Chowmein', 'Manchurian', 'Hakka Noodles', 'Sweet Corn Soup', 'Hot & Sour Soup',
+                'Kung Pao Chicken', 'Chilli Paneer', 'Spring Rolls', 'Veg Dumplings', 'Chicken Lollipop', 'Fish in Garlic Sauce',
+                'Szechuan Noodles', 'Mushroom Fried Rice', 'Chicken Fried Rice', 'Schezwan Rice', 'Crispy Corn', 'Honey Chilli Potato',
+                'American Chop Suey', 'Chicken Manchow Soup', 'Veg Manchurian', 'Chicken Hakka Noodles', 'Prawn Fried Rice',
+                'Shanghai Noodles', 'Mongolian Chicken', 'Triple Rice', 'Chilli Mushroom', 'Paneer Schezwan', 'Prawn Crackers'
+            ],
+            Continental: [
+                'Grilled Chicken', 'Spaghetti Alfredo', 'Chicken Alfredo', 'Pasta Arrabbiata', 'Veg Lasagna', 'Mushroom Risotto',
+                'Club Sandwich', 'French Fries', 'Chicken Burger', 'Veg Burger', 'Chicken Pot Pie', 'Salmon Grill', 'Penne Pasta',
+                'Baked Nachos', 'Mushroom Stroganoff', 'Chicken Schnitzel', 'Veg Cannelloni', 'Steak', 'Baked Ravioli', 'Chicken Casserole',
+                'Garlic Bread', 'Mac and Cheese', 'Fettuccine', 'Chicken Alfredo Pasta', 'Pesto Pasta', 'Veg Quesadilla', 'Chicken Wrap'
+            ],
+            Other: [
+                'Margherita Pizza', 'Pepperoni Pizza', 'Veg Wrap', 'Chicken Wrap', 'Falafel Bowl', 'Loaded Nachos', 'Taco', 'Burrito',
+                'Cheese Fries', 'Milkshake', 'Cold Coffee', 'Mocktail', 'Smoothie', 'Fruit Salad', 'Salad Bowl', 'Sandwich', 'Pasta Salad',
+                'Veggie Platter', 'Pancakes', 'Waffles', 'Brownie', 'Ice Cream Sundae', 'Donut', 'Mojito', 'Lemonade', 'Soft Drink',
+                'Tandoori Fries', 'Herb Rice Bowl', 'Crispy Chicken Sandwich', 'Loaded Burger', 'Cheese Pizza', 'Paneer Tikka Pizza'
+            ]
+        };
+
+        const styleWords = [
+            'Classic', 'Chef Special', 'Royal', 'Spicy', 'Mild', 'Crispy', 'Fusion', 'Street Style', 'Loaded', 'Signature',
+            'Hot Garlic', 'Creamy', 'Crunchy', 'Golden', 'Smoky', 'Herb Grill', 'Sizzler', 'Cheesy', 'Extra Spice', 'Crunchy Top'
+        ];
+
+        function buildMenu() {
+            const display = document.getElementById('menu-display');
+            display.innerHTML = '';
+
+            Object.entries(menuGroups).forEach(([category, baseItems]) => {
+                const categoryCard = document.createElement('div');
+                categoryCard.className = 'menu-category';
+
+                const heading = document.createElement('h3');
+                heading.textContent = category;
+                categoryCard.appendChild(heading);
+
+                const itemList = document.createElement('div');
+                itemList.className = 'menu-items';
+
+                baseItems.forEach((baseItem, index) => {
+                    const style = styleWords[index % styleWords.length];
+                    const name = `${baseItem} ${style}`;
+                    const price = getPrice(category, index, 0);
+                    createDishCard(itemList, name, price);
+                });
+
+                categoryCard.appendChild(itemList);
+                display.appendChild(categoryCard);
+            });
+        }
+
+        function createDishCard(container, name, price) {
+            const card = document.createElement('div');
+            card.className = 'menu-card';
+
+            const dishButton = document.createElement('button');
+            dishButton.className = 'menu-item';
+            dishButton.type = 'button';
+            dishButton.textContent = `${name} - ₹${price}`;
+            dishButton.addEventListener('click', function () {
+                setActiveCard(card);
+                document.getElementById('bill-output').textContent = `Selected: ${name}`;
+            });
+
+            const controls = document.createElement('div');
+            controls.className = 'menu-card-controls hidden';
+
+            let quantity = 1;
+            const minusBtn = document.createElement('button');
+            minusBtn.className = 'qty-btn';
+            minusBtn.type = 'button';
+            minusBtn.textContent = '−';
+            minusBtn.addEventListener('click', function () {
+                if (quantity > 1) {
+                    quantity -= 1;
+                    qtyDisplay.textContent = quantity;
+                }
+            });
+
+            const qtyDisplay = document.createElement('span');
+            qtyDisplay.className = 'qty-display';
+            qtyDisplay.textContent = quantity;
+
+            const plusBtn = document.createElement('button');
+            plusBtn.className = 'qty-btn';
+            plusBtn.type = 'button';
+            plusBtn.textContent = '+';
+            plusBtn.addEventListener('click', function () {
+                quantity += 1;
+                qtyDisplay.textContent = quantity;
+            });
+
+            const addBtn = document.createElement('button');
+            addBtn.className = 'add-btn';
+            addBtn.type = 'button';
+            addBtn.textContent = 'Add';
+            addBtn.addEventListener('click', function () {
+                addToList(name, price, quantity);
+                setActiveCard(card);
+            });
+
+            controls.appendChild(minusBtn);
+            controls.appendChild(qtyDisplay);
+            controls.appendChild(plusBtn);
+            controls.appendChild(addBtn);
+
+            card.appendChild(dishButton);
+            card.appendChild(controls);
+            container.appendChild(card);
+        }
+
+        function setActiveCard(activeCard) {
+            document.querySelectorAll('.menu-card').forEach(function (card) {
+                card.classList.remove('active');
+                const controls = card.querySelector('.menu-card-controls');
+                if (controls) {
+                    controls.classList.add('hidden');
+                }
+            });
+            activeCard.classList.add('active');
+            const activeControls = activeCard.querySelector('.menu-card-controls');
+            if (activeControls) {
+                activeControls.classList.remove('hidden');
+            }
+        }
+
+        function getPrice(category, index, styleIndex) {
+            const basePrices = {
+                Indian: 140,
+                Chinese: 150,
+                Continental: 180,
+                Other: 120
+            };
+
+            return basePrices[category] + index * 6 + styleIndex * 3;
+        }
+
+        function addToList(name, price, quantity) {
+            if (isNaN(quantity) || quantity < 1) {
+                alert('Quantity must be 1 or more.');
+                return;
+            }
+
+            orderItems.push({ name: name, quantity: quantity, price: price });
+            renderOrderList(document.getElementById('order-list'));
+            document.getElementById('bill-output').textContent = 'Dish added. You can add more dishes.';
+        }
+
+        function renderOrderList(orderList) {
+            if (orderItems.length === 0) {
+                orderList.innerHTML = '<li>No items added yet.</li>';
+                return;
+            }
+
+            orderList.innerHTML = '';
+            orderItems.forEach(function (item) {
+                const li = document.createElement('li');
+                li.textContent = item.name + ' x ' + item.quantity + ' = ₹' + (item.price * item.quantity);
+                orderList.appendChild(li);
+            });
+        }
+
+        function calculateBill() {
+            const output = document.getElementById('bill-output');
+
+            if (orderItems.length === 0) {
+                output.textContent = 'Please add at least one dish first.';
+                document.getElementById('order-btn').classList.add('hidden');
+                hideOrderForm();
+                return;
+            }
+
+            let total = 0;
+            orderItems.forEach(function (item) {
+                total += item.price * item.quantity;
+            });
+
+            output.textContent = 'Total bill: ₹' + total;
+            document.getElementById('order-btn').classList.remove('hidden');
+        }
+
+        function showOrderForm() {
+            if (orderItems.length === 0) {
+                alert('Please add at least one dish before placing an order.');
+                return;
+            }
+
+            const container = document.getElementById('order-form-container');
+            container.classList.remove('hidden');
+            document.getElementById('order-summary').value = orderItems.map(function (item) {
+                return item.name + ' x ' + item.quantity;
+            }).join(', ');
+            document.getElementById('total-bill').value = getCurrentTotal();
+            toggleAddressField();
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function hideOrderForm() {
+            document.getElementById('order-form-container').classList.add('hidden');
+            document.getElementById('order-message').textContent = '';
+        }
+
+        function toggleAddressField() {
+            const type = document.getElementById('order-type').value;
+            const addressGroup = document.getElementById('address-group');
+            const addressInput = document.getElementById('delivery-address');
+
+            if (type === 'Takeaway' || type === 'Home Delivery') {
+                addressGroup.classList.remove('hidden');
+                addressInput.required = true;
+            } else {
+                addressGroup.classList.add('hidden');
+                addressInput.required = false;
+            }
+        }
+
+        function submitOrderForm(event) {
+            const name = document.getElementById('customer-name').value.trim();
+            const phone = document.getElementById('customer-phone').value.trim();
+            const orderType = document.getElementById('order-type').value;
+            const addressInput = document.getElementById('delivery-address');
+
+            if (!name || !phone) {
+                event.preventDefault();
+                alert('Please enter your name and phone number.');
+                return false;
+            }
+
+            if ((orderType === 'Takeaway' || orderType === 'Home Delivery') && !addressInput.value.trim()) {
+                event.preventDefault();
+                alert('Please enter your address for takeaway or home delivery.');
+                addressInput.focus();
+                return false;
+            }
+
+            document.getElementById('order-summary').value = orderItems.map(function (item) {
+                return item.name + ' x ' + item.quantity;
+            }).join(', ');
+            document.getElementById('total-bill').value = getCurrentTotal();
+            return true;
+        }
+
+        function getCurrentTotal() {
+            let total = 0;
+            orderItems.forEach(function (item) {
+                total += item.price * item.quantity;
+            });
+            return total;
+        }
+
+        buildMenu();
+    </script>
+</body>
+
+</html>
